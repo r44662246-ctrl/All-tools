@@ -521,6 +521,100 @@ const categories = [
     {n:'تدوير صفحات PDF', d:'أعد ضبط اتجاه أي صفحة داخل الملف.'},
     {n:'تحويل PDF إلى صور', d:'استخرج كل صفحة كصورة PNG أو JPG.'},
   ]},
+  <!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>دمج ملفات PDF</title>
+
+<script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#f5f5f5;
+    text-align:center;
+    padding:40px;
+}
+.container{
+    max-width:500px;
+    margin:auto;
+    background:#fff;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 0 10px rgba(0,0,0,.1);
+}
+button{
+    padding:12px 20px;
+    font-size:16px;
+    cursor:pointer;
+    margin-top:15px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2>دمج ملفات PDF</h2>
+
+<input type="file" id="pdfFiles" multiple accept=".pdf">
+
+<br>
+
+<button onclick="mergePDFs()">دمج وتحميل</button>
+
+</div>
+
+<script>
+async function mergePDFs() {
+
+    const { PDFDocument } = PDFLib;
+
+    const input = document.getElementById("pdfFiles");
+
+    if(input.files.length < 2){
+        alert("اختر ملفين PDF أو أكثر.");
+        return;
+    }
+
+    const mergedPdf = await PDFDocument.create();
+
+    for(const file of input.files){
+
+        const bytes = await file.arrayBuffer();
+
+        const pdf = await PDFDocument.load(bytes);
+
+        const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+
+        pages.forEach(page=>{
+            mergedPdf.addPage(page);
+        });
+
+    }
+
+    const mergedBytes = await mergedPdf.save();
+
+    const blob = new Blob([mergedBytes], {type:"application/pdf"});
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+
+    a.href = url;
+
+    a.download = "merged.pdf";
+
+    a.click();
+
+    URL.revokeObjectURL(url);
+
+}
+</script>
+
+</body>
+</html>
   {icon:'🖼️', title:'أدوات الصور', desc:'ضغط، تغيير الحجم، تحويل الصيغ، إزالة الخلفية', tools:[
     {n:'ضغط الصور', d:'قلّل حجم الصورة بدون فقدان ملحوظ بالجودة.'},
     {n:'تغيير حجم الصورة', d:'غيّر الأبعاد بالبكسل أو بالنسبة المئوية.'},
